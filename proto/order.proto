@@ -1,0 +1,36 @@
+
+syntax = "proto3";
+package order;
+
+service OrderService{
+    rpc CreateOrder(CreateOrderDto) returns (Order){}
+    rpc FindAllOrders(Empty) returns (OrderList){}
+    rpc FindOrderById(FineOneOrderDto) returns (Order){}
+    rpc UpdateOrder(UpdateOrderDto) returns (Order){}
+    rpc DeleteOrder(FineOneOrderDto) returns (Order){}
+}
+message Empty {}
+message OrderList{
+    repeated Order orders = 1;
+}
+message FineOneOrderDto{
+    string id = 1;
+}
+message CreateOrderDto{
+    string id = 1;
+    string userId = 2;
+    string productId = 3;
+    int32 quantity = 4;
+}
+message UpdateOrderDto{
+    string id = 1;
+    string userId = 2;
+    string productId = 3;
+    int32 quantity = 4;
+}
+message Order{
+    string id = 1;
+    string userId = 2;
+    string productId = 3;
+    int32 quantity = 4;
+}
