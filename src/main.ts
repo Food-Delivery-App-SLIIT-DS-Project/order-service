@@ -11,12 +11,12 @@ async function bootstrap() {
       options: {
         protoPath: join(__dirname, '../order.proto'),
         package: 'order',
-        url: 'localhost:50056',
+        url: 'localhost:50055',
       },
     },
   );
   app.enableShutdownHooks();
   await app.listen();
-  console.log('Order service is running on: http://localhost:50056');
+  console.log('Order service is running on: http://localhost:50055');
 }
 void bootstrap();
