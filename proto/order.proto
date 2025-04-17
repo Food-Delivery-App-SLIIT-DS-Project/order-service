@@ -8,7 +8,25 @@ service OrderService{
     rpc FindOrderById(FineOneOrderDto) returns (Order){}
     rpc UpdateOrder(UpdateOrderDto) returns (Order){}
     rpc DeleteOrder(FineOneOrderDto) returns (Order){}
+    rpc PlaceOrder (CreateOrderRequest) returns (OrderResponse);
 }
+message User {
+    string fullName = 1;
+    string email = 2;
+    string phoneNumber = 3;
+  }
+  
+  message CreateOrderRequest {
+    User user = 1;
+    string orderId = 2;
+    string deliveryEstimate = 3;
+  }
+  
+  message OrderResponse {
+    string orderId = 1;
+    string status = 2;
+    string estimatedDelivery = 3;
+  }
 message Empty {}
 message OrderList{
     repeated Order orders = 1;
