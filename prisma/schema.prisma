@@ -15,8 +15,36 @@ datasource db {
 }
 
 model Order {
-  id        String   @id @default(cuid())
-  userId    String
-  productId String
-  quantity  Int
+  orderID      String      @id @default(cuid())
+  customerID   String
+  restaurantID String
+  deliveryID   String?  
+  status       OrderStatus @default(PENDING)
+  totalPrice   Decimal     @db.Decimal(10, 2)
+  createdAt    DateTime    @default(now())
+  updatedAt    DateTime    @updatedAt
+
+  items        OrderItem[]
+
+}
+
+model OrderItem {
+  orderItemID String   @id @default(cuid())  
+  orderID     String   
+  menuID      String   
+  quantity    Int      @default(1)
+  price       Decimal  @db.Decimal(10, 2)
+
+  order       Order    @relation(fields: [orderID], references: [orderID], onDelete: Cascade)
+
+}
+
+enum OrderStatus {
+  PENDING
+  CONFIRMED
+  PREPARING
+  WAITING_FOR_PICKUP
+  OUT_FOR_DELIVERY
+  DELIVERED
+  CANCELED
 }

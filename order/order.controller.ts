@@ -1,35 +1,41 @@
 import { Controller } from '@nestjs/common';
-import { MessagePattern, Payload } from '@nestjs/microservices';
+import { GrpcMethod, MessagePattern, Payload } from '@nestjs/microservices';
 import { OrderService } from './order.service';
-import { CreateOrderDto } from './dto/create-order.dto';
-import { UpdateOrderDto } from './dto/update-order.dto';
+import { OrderStatus } from '@prisma/client';
+
 
 @Controller()
 export class OrderController {
   constructor(private readonly orderService: OrderService) {}
 
-  @MessagePattern('createOrder')
-  create(@Payload() createOrderDto: CreateOrderDto) {
-    return this.orderService.create(createOrderDto);
+  @GrpcMethod('OrderService', 'createOrder')
+  @MessagePattern('CreateOrder')
+  async create(@Payload() data: any) {
+    return this.orderService.create(data);
   }
 
-  @MessagePattern('findAllOrder')
-  findAll() {
+  @GrpcMethod('OrderService', 'findAllOrders')
+  @MessagePattern('FindAllOrders')
+  async findAll() {
     return this.orderService.findAll();
   }
 
-  @MessagePattern('findOneOrder')
-  findOne(@Payload() id: number) {
-    return this.orderService.findOne(id);
+  @GrpcMethod('OrderService', 'findOneOrder')
+  @MessagePattern('FindOneOrder')
+  async findOne(@Payload() data: { orderId: string }) {
+    return this.orderService.findOne(data.orderId);
   }
 
-  @MessagePattern('updateOrder')
-  update(@Payload() updateOrderDto: UpdateOrderDto) {
-    return this.orderService.update(updateOrderDto.id, updateOrderDto);
+  @GrpcMethod('OrderService', 'updateOrderStatus')
+  @MessagePattern('UpdateOrderStatus')
+  async updateOrderStatus(@Payload() data: { orderId: string; status: OrderStatus }) {
+    console.log('Updating order status:', data);
+    return this.orderService.updateStatus(data.orderId, data.status);
   }
 
-  @MessagePattern('removeOrder')
-  remove(@Payload() id: number) {
-    return this.orderService.remove(id);
+  @GrpcMethod('OrderService', 'removeOrder')
+  @MessagePattern('RemoveOrder')
+  async remove(@Payload() data: { orderId: string }) {
+    return this.orderService.remove(data.orderId);
   }
 }
