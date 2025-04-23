@@ -2,49 +2,48 @@
 import { Controller } from '@nestjs/common';
 import { OrderService } from './order.service';
 import {
-  CreateOrderDto,
   CreateOrderRequest,
-  Empty,
-  FineOneOrderDto,
-  Order,
+  OrderId,
   OrderList,
   OrderResponse,
   OrderServiceController,
-  UpdateOrderDto,
+  RemoveResponse,
+  UpdateStatusRequest,
 } from 'src/types';
-import { GrpcMethod } from '@nestjs/microservices';
-import { Observable } from 'rxjs';
+import { GrpcMethod, MessagePattern } from '@nestjs/microservices';
 
 @Controller()
 export class OrderController implements OrderServiceController {
   constructor(private readonly orderService: OrderService) {}
-  createOrder(
-    request: CreateOrderDto,
-  ): Promise<Order> | Observable<Order> | Order {
-    throw new Error('Method not implemented.');
+
+  @GrpcMethod('OrderService', 'createOrder')
+  @MessagePattern('CreateOrder')
+  async createOrder(data: CreateOrderRequest): Promise<OrderResponse> {
+    return await this.orderService.create(data);
   }
-  findAllOrders(
-    request: Empty,
-  ): Promise<OrderList> | Observable<OrderList> | OrderList {
-    throw new Error('Method not implemented.');
+
+  @GrpcMethod('OrderService', 'findAllOrders')
+  @MessagePattern('FindAllOrders')
+  findAllOrders(): Promise<OrderList> {
+    return this.orderService.findAll();
   }
-  findOrderById(
-    request: FineOneOrderDto,
-  ): Promise<Order> | Observable<Order> | Order {
-    throw new Error('Method not implemented.');
+
+  @GrpcMethod('OrderService', 'findOneOrder')
+  @MessagePattern('FindOneOrder')
+  findOneOrder(data: OrderId): Promise<OrderResponse> {
+    return this.orderService.findOne(data);
   }
-  updateOrder(
-    request: UpdateOrderDto,
-  ): Promise<Order> | Observable<Order> | Order {
-    throw new Error('Method not implemented.');
+
+  @GrpcMethod('OrderService', 'updateOrderStatus')
+  @MessagePattern('UpdateOrderStatus')
+  updateOrderStatus(data: UpdateStatusRequest): Promise<OrderResponse> {
+    console.log('Updating order status:', data);
+    return this.orderService.updateStatus(data.orderId, data.status);
   }
-  deleteOrder(
-    request: FineOneOrderDto,
-  ): Promise<Order> | Observable<Order> | Order {
-    throw new Error('Method not implemented.');
-  }
-  @GrpcMethod('OrderService', 'PlaceOrder')
-  placeOrder(data: CreateOrderRequest): Promise<OrderResponse> {
-    return this.orderService.placeOrder(data);
+
+  @GrpcMethod('OrderService', 'removeOrder')
+  @MessagePattern('RemoveOrder')
+  removeOrder(data: OrderId): Promise<RemoveResponse> {
+    return this.orderService.remove(data.orderId);
   }
 }

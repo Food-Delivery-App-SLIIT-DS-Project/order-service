@@ -10,96 +10,86 @@ import { Observable } from "rxjs";
 
 export const protobufPackage = "order";
 
-export interface User {
-  fullName: string;
-  email: string;
-  phoneNumber: string;
+export interface Empty {
+}
+
+export interface OrderId {
+  orderId: string;
+}
+
+export interface UpdateStatusRequest {
+  orderId: string;
+  status: string;
+}
+
+export interface OrderItemInput {
+  menuId: string;
+  quantity: number;
+  price: number;
 }
 
 export interface CreateOrderRequest {
-  user: User | undefined;
-  orderId: string;
-  deliveryEstimate: string;
+  customerId: string;
+  restaurantId: string;
+  deliveryId: string;
+  status?: string | undefined;
+  totalPrice: number;
+  items: OrderItemInput[];
+}
+
+export interface OrderItem {
+  menuId: string;
+  quantity: number;
+  price: number;
 }
 
 export interface OrderResponse {
   orderId: string;
+  customerId: string;
+  restaurantId: string;
+  deliveryId: string;
   status: string;
-  estimatedDelivery: string;
-}
-
-export interface Empty {
+  totalPrice: number;
+  items: OrderItem[];
 }
 
 export interface OrderList {
-  orders: Order[];
+  orders: OrderResponse[];
 }
 
-export interface FineOneOrderDto {
-  id: string;
-}
-
-export interface CreateOrderDto {
-  id: string;
-  userId: string;
-  productId: string;
-  quantity: number;
-}
-
-export interface UpdateOrderDto {
-  id: string;
-  userId: string;
-  productId: string;
-  quantity: number;
-}
-
-export interface Order {
-  id: string;
-  userId: string;
-  productId: string;
-  quantity: number;
+export interface RemoveResponse {
+  message: string;
 }
 
 export const ORDER_PACKAGE_NAME = "order";
 
 export interface OrderServiceClient {
-  createOrder(request: CreateOrderDto): Observable<Order>;
+  createOrder(request: CreateOrderRequest): Observable<OrderResponse>;
 
   findAllOrders(request: Empty): Observable<OrderList>;
 
-  findOrderById(request: FineOneOrderDto): Observable<Order>;
+  findOneOrder(request: OrderId): Observable<OrderResponse>;
 
-  updateOrder(request: UpdateOrderDto): Observable<Order>;
+  updateOrderStatus(request: UpdateStatusRequest): Observable<OrderResponse>;
 
-  deleteOrder(request: FineOneOrderDto): Observable<Order>;
-
-  placeOrder(request: CreateOrderRequest): Observable<OrderResponse>;
+  removeOrder(request: OrderId): Observable<RemoveResponse>;
 }
 
 export interface OrderServiceController {
-  createOrder(request: CreateOrderDto): Promise<Order> | Observable<Order> | Order;
+  createOrder(request: CreateOrderRequest): Promise<OrderResponse> | Observable<OrderResponse> | OrderResponse;
 
   findAllOrders(request: Empty): Promise<OrderList> | Observable<OrderList> | OrderList;
 
-  findOrderById(request: FineOneOrderDto): Promise<Order> | Observable<Order> | Order;
+  findOneOrder(request: OrderId): Promise<OrderResponse> | Observable<OrderResponse> | OrderResponse;
 
-  updateOrder(request: UpdateOrderDto): Promise<Order> | Observable<Order> | Order;
+  updateOrderStatus(request: UpdateStatusRequest): Promise<OrderResponse> | Observable<OrderResponse> | OrderResponse;
 
-  deleteOrder(request: FineOneOrderDto): Promise<Order> | Observable<Order> | Order;
-
-  placeOrder(request: CreateOrderRequest): Promise<OrderResponse> | Observable<OrderResponse> | OrderResponse;
+  removeOrder(request: OrderId): Promise<RemoveResponse> | Observable<RemoveResponse> | RemoveResponse;
 }
 
 export function OrderServiceControllerMethods() {
   return function (constructor: Function) {
-    const grpcMethods: string[] = [
-      "createOrder",
-      "findAllOrders",
-      "findOrderById",
-      "updateOrder",
-      "deleteOrder",
-      "placeOrder",
-    ];
+    const grpcMethods: string[] = ["createOrder", "findAllOrders", "findOneOrder", "updateOrderStatus", "removeOrder"];
     for (const method of grpcMethods) {
       const descriptor: any = Reflect.getOwnPropertyDescriptor(constructor.prototype, method);
       GrpcMethod("OrderService", method)(constructor.prototype[method], method, descriptor);
