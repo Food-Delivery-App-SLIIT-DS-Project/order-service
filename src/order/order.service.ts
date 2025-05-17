@@ -135,6 +135,7 @@ export class OrderService implements OnModuleInit {
 
       return this.mapOrder(order);
     } catch (err) {
+      console.error('Error creating order:', err);
       throw new RpcException({
         code: status.INTERNAL,
         message: 'Failed to create order',
