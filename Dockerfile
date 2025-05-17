@@ -7,7 +7,12 @@ WORKDIR /app
 COPY package*.json ./
 RUN npm ci
 
-COPY . . 
+# Generate Prisma client
+COPY prisma ./prisma
+RUN npx prisma generate
+
+# Copy rest of app
+COPY . .
 RUN npm run build
 
 # === Production Stage ===
