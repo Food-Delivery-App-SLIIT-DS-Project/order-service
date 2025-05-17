@@ -34,6 +34,7 @@ export class OrderController implements OrderServiceController {
   @GrpcMethod('OrderService', 'createOrder')
   @MessagePattern('CreateOrder')
   async createOrder(data: CreateOrderRequest): Promise<OrderResponse> {
+    console.log('Creating order:', data);
     return await this.orderService.create(data);
   }
 
