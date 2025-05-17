@@ -10,6 +10,14 @@ import { Observable } from "rxjs";
 
 export const protobufPackage = "order";
 
+export interface RestaurantID {
+  restaurantId: string;
+}
+
+export interface CustomerID {
+  customerId: string;
+}
+
 export interface Empty {
 }
 
@@ -31,7 +39,7 @@ export interface OrderItemInput {
 export interface CreateOrderRequest {
   customerId: string;
   restaurantId: string;
-  deliveryId: string;
+  deliveryId?: string | undefined;
   status?: string | undefined;
   totalPrice: number;
   items: OrderItemInput[];
@@ -73,6 +81,10 @@ export interface OrderServiceClient {
   updateOrderStatus(request: UpdateStatusRequest): Observable<OrderResponse>;
 
   removeOrder(request: OrderId): Observable<RemoveResponse>;
+
+  getOrderByRestaurantId(request: RestaurantID): Observable<OrderList>;
+
+  getOrderByCustomerId(request: CustomerID): Observable<OrderList>;
 }
 
 export interface OrderServiceController {
@@ -85,11 +97,23 @@ export interface OrderServiceController {
   updateOrderStatus(request: UpdateStatusRequest): Promise<OrderResponse> | Observable<OrderResponse> | OrderResponse;
 
   removeOrder(request: OrderId): Promise<RemoveResponse> | Observable<RemoveResponse> | RemoveResponse;
+
+  getOrderByRestaurantId(request: RestaurantID): Promise<OrderList> | Observable<OrderList> | OrderList;
+
+  getOrderByCustomerId(request: CustomerID): Promise<OrderList> | Observable<OrderList> | OrderList;
 }
 
 export function OrderServiceControllerMethods() {
   return function (constructor: Function) {
-    const grpcMethods: string[] = ["createOrder", "findAllOrders", "findOneOrder", "updateOrderStatus", "removeOrder"];
+    const grpcMethods: string[] = [
+      "createOrder",
+      "findAllOrders",
+      "findOneOrder",
+      "updateOrderStatus",
+      "removeOrder",
+      "getOrderByRestaurantId",
+      "getOrderByCustomerId",
+    ];
     for (const method of grpcMethods) {
       const descriptor: any = Reflect.getOwnPropertyDescriptor(constructor.prototype, method);
       GrpcMethod("OrderService", method)(constructor.prototype[method], method, descriptor);
