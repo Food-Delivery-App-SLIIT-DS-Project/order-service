@@ -12,10 +12,12 @@ import { OrderStatus, PrismaClient } from '@prisma/client';
 import { lastValueFrom } from 'rxjs';
 import {
   CreateOrderRequest,
+  CustomerID,
   OrderId,
   OrderList,
   OrderResponse,
   RemoveResponse,
+  RestaurantID,
 } from 'src/types';
 import {
   FineOneUserDto,
@@ -64,6 +66,37 @@ export class OrderService implements OnModuleInit {
     });
   }
 
+  // get order by restaurant id
+  async getOrderByRestaurantId(data: RestaurantID): Promise<OrderList> {
+    try {
+      const orders = await this.PrismaService.order.findMany({
+        where: { restaurantID: data.restaurantId },
+        include: { items: true },
+      });
+      return { orders: orders.map(this.mapOrder) };
+    } catch (err) {
+      throw new RpcException({
+        code: status.INTERNAL,
+        message: 'Failed to fetch orders',
+      });
+    }
+  }
+  // get order by customer id
+  async getOrderByCustomerId(data: CustomerID): Promise<OrderList> {
+    try {
+      const orders = await this.PrismaService.order.findMany({
+        where: { customerID: data.customerId },
+        include: { items: true },
+      });
+      return { orders: orders.map(this.mapOrder) };
+    } catch (err) {
+      throw new RpcException({
+        code: status.INTERNAL,
+        message: 'Failed to fetch orders',
+      });
+    }
+  }
+
   // Create order
   async create(data: CreateOrderRequest): Promise<OrderResponse> {
     try {
@@ -102,6 +135,7 @@ export class OrderService implements OnModuleInit {
 
       return this.mapOrder(order);
     } catch (err) {
+      console.error('Error creating order:', err);
       throw new RpcException({
         code: status.INTERNAL,
         message: 'Failed to create order',

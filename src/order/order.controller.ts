@@ -3,11 +3,13 @@ import { Controller } from '@nestjs/common';
 import { OrderService } from './order.service';
 import {
   CreateOrderRequest,
+  CustomerID,
   OrderId,
   OrderList,
   OrderResponse,
   OrderServiceController,
   RemoveResponse,
+  RestaurantID,
   UpdateStatusRequest,
 } from 'src/types';
 import { GrpcMethod, MessagePattern } from '@nestjs/microservices';
@@ -16,9 +18,23 @@ import { GrpcMethod, MessagePattern } from '@nestjs/microservices';
 export class OrderController implements OrderServiceController {
   constructor(private readonly orderService: OrderService) {}
 
+  // get order by restaurantId
+  @GrpcMethod('OrderService', 'getOrderByRestaurantId')
+  @MessagePattern('GetOrderByRestaurantId')
+  getOrderByRestaurantId(data: RestaurantID): Promise<OrderList> {
+    return this.orderService.getOrderByRestaurantId(data);
+  }
+  // get order by customerId
+  @GrpcMethod('OrderService', 'getOrderByCustomerId')
+  @MessagePattern('GetOrderByCustomerId')
+  getOrderByCustomerId(data: CustomerID): Promise<OrderList> {
+    return this.orderService.getOrderByCustomerId(data);
+  }
+
   @GrpcMethod('OrderService', 'createOrder')
   @MessagePattern('CreateOrder')
   async createOrder(data: CreateOrderRequest): Promise<OrderResponse> {
+    console.log('Creating order:', data);
     return await this.orderService.create(data);
   }
 
