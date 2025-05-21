@@ -26,6 +26,10 @@ model Order {
 
   items        OrderItem[]
 
+  //  Customer location fields
+  customerLatitude  Float?
+  customerLongitude Float?
+  @@index([customerLatitude, customerLongitude])
 }
 
 model OrderItem {

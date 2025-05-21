@@ -56,6 +56,10 @@ export class OrderService implements OnModuleInit {
           quantity: item.quantity,
           price: item.price.toNumber(),
         })) ?? [],
+      customerLocation: {
+        latitude: order.customerLatitude ?? 0,
+        longitude: order.customerLongitude ?? 0,
+      },
     };
   }
 
@@ -97,14 +101,34 @@ export class OrderService implements OnModuleInit {
     }
   }
 
-  // Create order
   async create(data: CreateOrderRequest): Promise<OrderResponse> {
     try {
+      // Validate required fields manually (optional if using DTO validation pipes)
+      if (!data.customerId || !data.restaurantId) {
+        throw new RpcException({
+          code: status.INVALID_ARGUMENT,
+          message: 'Missing customerId or restaurantId',
+        });
+      }
+
+      if (
+        !data.items ||
+        !Array.isArray(data.items) ||
+        data.items.length === 0
+      ) {
+        throw new RpcException({
+          code: status.INVALID_ARGUMENT,
+          message: 'Order must contain at least one item',
+        });
+      }
+
+      // Create order in DB
       const order = await this.PrismaService.order.create({
         data: {
           customerID: data.customerId,
           restaurantID: data.restaurantId,
-          deliveryID: data.deliveryId,
+          // Conditionally include deliveryID only if it's defined
+          ...(data.deliveryId ? { deliveryID: data.deliveryId } : {}),
           status: data.status as OrderStatus,
           totalPrice: data.totalPrice,
           items: {
@@ -116,9 +140,13 @@ export class OrderService implements OnModuleInit {
               })),
             },
           },
+          customerLatitude: data.customerLocation?.latitude,
+          customerLongitude: data.customerLocation?.longitude,
         },
         include: { items: true },
       });
+
+      // Fetch user details
       const currentUser = await this.getUserById(data.customerId);
       if (!currentUser) {
         throw new RpcException({
@@ -126,16 +154,35 @@ export class OrderService implements OnModuleInit {
           message: 'User not found',
         });
       }
-      // Emit to Kafka topic
+
+      // Emit event to Kafka
       this.kafkaClient.emit('ORDER_PLACED', {
         user: currentUser,
         orderId: order.orderID,
-        // deliveryEstimate: '30 mins',
       });
 
+      // console.log(order);
       return this.mapOrder(order);
     } catch (err) {
-      console.error('Error creating order:', err);
+      // Better logging: logs full stack trace and message in the cluster
+      console.error('🔥 Error creating order:', {
+        message: err?.message,
+        stack: err?.stack,
+        cause: err?.cause,
+      });
+
+      if (err instanceof RpcException) {
+        throw err; // rethrow gRPC-compliant exceptions
+      }
+
+      // Optional: handle Prisma errors explicitly
+      if (err?.code === 'P2002') {
+        throw new RpcException({
+          code: status.ALREADY_EXISTS,
+          message: 'Order already exists or violates unique constraint',
+        });
+      }
+
       throw new RpcException({
         code: status.INTERNAL,
         message: 'Failed to create order',
