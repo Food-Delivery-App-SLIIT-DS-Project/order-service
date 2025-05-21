@@ -40,8 +40,13 @@ message CreateOrderRequest {
   string restaurantId = 2;
   optional string deliveryId = 3;
   optional string status = 4;
-    double totalPrice = 5;
+  double totalPrice = 5;
   repeated OrderItemInput items = 6;
+  Location customerLocation = 7;  
+}
+message Location {
+  double latitude = 1;
+  double longitude = 2;
 }
 
 message OrderItem {
@@ -58,6 +63,7 @@ message OrderResponse {
   string status = 5;
   double totalPrice = 6;
   repeated OrderItem items = 7;
+  Location customerLocation = 8;
 }
 
 message OrderList {
