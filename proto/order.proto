@@ -10,6 +10,11 @@ service OrderService {
   rpc RemoveOrder (OrderId) returns (RemoveResponse);
   rpc GetOrderByRestaurantId (RestaurantID) returns (OrderList);
   rpc GetOrderByCustomerId (CustomerID) returns (OrderList);
+  rpc AssignDeliveryId(AssignDeliveryRequest) returns(OrderResponse);
+}
+message AssignDeliveryRequest {
+  string orderId = 1;
+  string deliveryId = 2;
 }
 message RestaurantID {
   string restaurantId = 1;

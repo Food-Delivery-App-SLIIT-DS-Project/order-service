@@ -277,4 +277,25 @@ export class OrderService implements OnModuleInit {
       });
     }
   }
+
+  // assign delivery id ----------
+  async assignDeliveryId(
+    orderId: string,
+    deliveryId: string,
+  ): Promise<OrderResponse> {
+    try {
+      const updated = await this.PrismaService.order.update({
+        where: { orderID: orderId },
+        data: { deliveryID: deliveryId },
+        include: { items: true },
+      });
+      return this.mapOrder(updated);
+    } catch (err) {
+      if (err.code === 'P2025') this.throwNotFound(orderId);
+      throw new RpcException({
+        code: status.INTERNAL,
+        message: 'Failed to assign delivery ID',
+      });
+    }
+  }
 }

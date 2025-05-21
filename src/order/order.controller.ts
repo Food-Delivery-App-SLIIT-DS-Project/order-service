@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unsafe-return */
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import { Controller } from '@nestjs/common';
 import { OrderService } from './order.service';
@@ -61,5 +62,15 @@ export class OrderController implements OrderServiceController {
   @MessagePattern('RemoveOrder')
   removeOrder(data: OrderId): Promise<RemoveResponse> {
     return this.orderService.remove(data.orderId);
+  }
+
+  // assign delivery id
+  @GrpcMethod('OrderService', 'assignDeliveryId')
+  @MessagePattern('AssignDeliveryId')
+  assignDeliveryId(data: {
+    orderId: string;
+    deliveryId: string;
+  }): Promise<OrderResponse> {
+    return this.orderService.assignDeliveryId(data.orderId, data.deliveryId);
   }
 }
